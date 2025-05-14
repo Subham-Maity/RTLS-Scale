@@ -1,5 +1,6 @@
 import { Injectable, NestMiddleware } from '@nestjs/common';
 import { NextFunction, Request, Response } from 'express';
+import { Logger } from '@nestjs/common';
 
 export interface LoggerOptions {
   enabled?: boolean;
@@ -9,12 +10,12 @@ export interface LoggerOptions {
 
 @Injectable()
 export class LoggerMiddleware implements NestMiddleware {
+  private readonly logger = new Logger('HTTP');
   private static options: LoggerOptions = {
     enabled: true,
     logRequest: true,
     logLatency: true,
   };
-  private requestNumber = 0;
 
   static configure(options: LoggerOptions) {
     LoggerMiddleware.options = { ...LoggerMiddleware.options, ...options };
@@ -25,13 +26,18 @@ export class LoggerMiddleware implements NestMiddleware {
       return next();
     }
 
-    this.requestNumber++;
     const { method, originalUrl } = request;
     const start = Date.now();
 
+    // Check if this is a websocket connection and log it
+    if (request.headers.upgrade === 'websocket') {
+      this.logger.log(
+        `WebSocket connection request received at ${originalUrl}`,
+      );
+    }
     // Log request information
-    if (LoggerMiddleware.options.logRequest) {
-      console.log(`[Request #${this.requestNumber}] ${method} ${originalUrl}`);
+    else if (LoggerMiddleware.options.logRequest) {
+      this.logger.log(`${method} ${originalUrl}`);
     }
 
     response.on('finish', () => {
@@ -43,10 +49,12 @@ export class LoggerMiddleware implements NestMiddleware {
       const end = Date.now();
       const latency = end - start;
 
-      // Log response status code and latency
-      console.log(
-        `[Response #${this.requestNumber}] ${statusCode} completed in ${latency}ms`,
-      );
+      // Don't log websocket latency as it's handled separately
+      if (request.headers.upgrade !== 'websocket') {
+        this.logger.log(
+          `${method} ${originalUrl} ${statusCode} - ${latency}ms`,
+        );
+      }
     });
 
     next();

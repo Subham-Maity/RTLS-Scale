@@ -8,7 +8,7 @@ import { MulterModule } from '@nestjs/platform-express';
 import { ScheduleModule } from '@nestjs/schedule';
 import { LoggerMiddleware } from './logger';
 import { HttpExceptionFilter } from './error';
-
+import { WebsocketModule } from './websockets';
 // For everything
 LoggerMiddleware.configure({
   enabled: true, // Enable/disable all logging
@@ -26,6 +26,7 @@ LoggerMiddleware.configure({
 
     JwtModule.registerAsync({
       imports: [
+        WebsocketModule,
         ConfigModule,
         MulterModule.register({
           dest: './uploads',
