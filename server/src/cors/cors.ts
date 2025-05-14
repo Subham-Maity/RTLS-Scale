@@ -1,7 +1,11 @@
 import { INestApplication, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface';
-export const allowList = ['http://localhost:3333', 'http://localhost:3001'];
+export const allowList = [
+  'http://localhost:3333',
+  'http://localhost:3001',
+  'http://localhost:3000',
+];
 export const configureCors = (
   app: INestApplication,
   configService: ConfigService,
