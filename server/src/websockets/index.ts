@@ -1,2 +1,2 @@
-export * from './websockets.gateway';
+export * from './location.gateway';
 export * from './websocket.module';
